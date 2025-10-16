@@ -366,6 +366,9 @@ def GetRequiredArgs():
 
       # Don't use the chrome style plugin.
       'clang_use_chrome_plugins': False,
+
+      # disable unused crap
+      'enable_openscreen_protocol': False,
   }
 
   if platform == 'windows' or platform == 'mac':
