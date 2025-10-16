@@ -360,8 +360,9 @@ def GetRequiredArgs():
   """
   result = {
       'optimize_webui': True,
-      # Enable support for Widevine CDM.
-      'enable_widevine': True,
+
+      # disable malware
+      'enable_widevine': False,
 
       # Don't use the chrome style plugin.
       'clang_use_chrome_plugins': False,

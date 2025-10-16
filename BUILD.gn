@@ -254,9 +254,6 @@ if (is_linux) {
 # Enable support for Print Preview.
 assert(enable_print_preview)
 
-# Enable support for Widevine CDM.
-assert(enable_widevine)
-
 if (is_mac || is_win) {
   # Enable Widevine CDM host verification and storage ID.
   assert(enable_cdm_host_verification)
