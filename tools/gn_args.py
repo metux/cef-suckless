@@ -369,6 +369,34 @@ def GetRequiredArgs():
 
       # disable unused crap
       'enable_openscreen_protocol': False,
+
+#      'enable_pdf': False,
+#      'enable_printing': False,
+      'enable_remoting': False,
+#      'enable_rust': False, # breaks GN dependencies
+#      'enable_screen_ai_service': False,
+      'enable_vr': False,
+
+#      'enable_speech_service': False,
+
+      'build_dawn_tests': False,
+
+      'use_cups': False,
+      'use_dbus': False,
+
+      'use_kerberos': False,
+      'is_p2p_enabled': False,
+#      'enterprise_watermark': False,
+
+      # dont need "enterprise" bullshit
+      'enterprise_telomere_reporting': False,
+      'enterprise_local_content_analysis': False,
+      'enterprise_data_controls': False,
+      'enterprise_content_analysis': False,
+      'enterprise_cloud_content_analysis': False,
+      'enable_enterprise_companion': False,
+
+#      'enable_supervised_users': False, # needed by telemetry_perf_unittests
   }
 
   if platform == 'windows' or platform == 'mac':
