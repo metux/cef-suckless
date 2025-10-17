@@ -365,6 +365,8 @@ def GetRequiredArgs():
 
       # Don't use the chrome style plugin.
       'clang_use_chrome_plugins': False,
+
+      'enable_remoting': False,
   }
 
   if platform == 'windows' or platform == 'mac':
