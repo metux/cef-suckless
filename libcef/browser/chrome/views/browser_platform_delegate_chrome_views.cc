@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <iostream>
+
 #include "cef/libcef/browser/chrome/views/browser_platform_delegate_chrome_views.h"
 
 #include "cef/include/views/cef_window.h"
@@ -25,6 +27,7 @@ void CefBrowserPlatformDelegateChromeViews::SetBrowserView(
     CefRefPtr<CefBrowserView> browser_view) {
   DCHECK(!browser_view_);
   DCHECK(browser_view);
+  fprintf(stderr, "CefBrowserPlatformDelegateChromeViews::SetBrowserView()\n");
   browser_view_ =
       static_cast<CefBrowserViewImpl*>(browser_view.get())->GetWeakPtr();
 }
@@ -40,8 +43,13 @@ void CefBrowserPlatformDelegateChromeViews::WebContentsDestroyed(
     content::WebContents* web_contents) {
   CefBrowserPlatformDelegateChrome::WebContentsDestroyed(web_contents);
   // |browser_view_| may be destroyed before this callback arrives.
+  fprintf(stderr, "CefBrowserPlatformDelegateChromeViews::WebContentsDestroyed()\n");
   if (browser_view_) {
-    browser_view_->WebContentsDestroyed(web_contents);
+    fprintf(stderr, " --> browser_view_ still valid\n");
+//    browser_view_->WebContentsDestroyed(web_contents);
+//    fprintf(stderr, " --> after calling browser_view_->WebContentsDestroyed()\n");
+  } else {
+    fprintf(stderr, " --> browser_view_ not valid anymore\n");
   }
 }
 
@@ -81,6 +89,7 @@ void CefBrowserPlatformDelegateChromeViews::NotifyBrowserCreated() {
 
 void CefBrowserPlatformDelegateChromeViews::NotifyBrowserDestroyed() {
   // |browser_view_| may be destroyed before this callback arrives.
+  fprintf(stderr, "CefBrowserPlatformDelegateChromeViews::NotifyBrowserDestroyed()\n");
   if (browser_view_ && browser_view_->delegate()) {
     browser_view_->delegate()->OnBrowserDestroyed(browser_view_.get(),
                                                   browser_.get());
@@ -91,16 +100,26 @@ void CefBrowserPlatformDelegateChromeViews::BrowserDestroyed(
     CefBrowserHostBase* browser) {
   CefBrowserPlatformDelegateChrome::BrowserDestroyed(browser);
   // |browser_view_| may be destroyed before this callback arrives.
+  fprintf(stderr, "CefBrowserPlatformDelegateChromeViews::BrowserDestroyed()\n");
   if (browser_view_) {
-    browser_view_->BrowserDestroyed(browser);
+    fprintf(stderr, " ==> browser_view_ still valid. calling BrowserDestroyed()\n");
+//    browser_view_->BrowserDestroyed(browser);
+//    fprintf(stderr, " ==> after BrowserDestroyed\n");
+  } else {
+    fprintf(stderr, " ==> browser_view_ not valid anymore\n");
   }
   browser_view_ = nullptr;
 }
 
 void CefBrowserPlatformDelegateChromeViews::CloseHostWindow() {
   views::Widget* widget = GetWindowWidget();
+  fprintf(stderr, "CefBrowserPlatformDelegateChromeViews::CloseHostWindow()\n");
   if (widget && !widget->IsClosed()) {
+    fprintf(stderr, "==> browser_view_ still valid\n");
     widget->Close();
+    fprintf(stderr, "==> after widget->Close()\n");
+  } else {
+    fprintf(stderr, "==> browser_view_ not valid anymore\n");
   }
 }
 
