@@ -308,7 +308,9 @@ def get_script_name(script_name):
 
 
 def transfer_tools_files(script_dir, build_dirs, output_dir):
+  print("transfer_tools_files\n")
   for build_dir in build_dirs:
+    print("build_dir=%s\n", build_dir)
     is_debug = build_dir.find('Debug') >= 0
     dst_dir_name = 'Debug' if is_debug else 'Release'
     dst_dir = os.path.join(output_dir, dst_dir_name)
@@ -1393,7 +1395,7 @@ elif platform == 'linux':
 
   valid_build_dir = None
 
-  if mode == 'standard':
+  if mode == 'standard.XXX': # FIXME
     # transfer Debug files
     build_dir = build_dir_debug
     libcef_path = os.path.join(build_dir, libcef_so)
