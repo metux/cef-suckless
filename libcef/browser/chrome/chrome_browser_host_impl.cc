@@ -559,12 +559,18 @@ void ChromeBrowserHostImpl::SetBrowser(Browser* browser) {
 }
 
 void ChromeBrowserHostImpl::WindowDestroyed() {
+  fprintf(stderr, "ChromeBrowserHostImpl::WindowDestroyed() enter\n");
   CEF_REQUIRE_UIT();
+  fprintf(stderr, "ChromeBrowserHostImpl::WindowDestroyed() passed CEF_REQUIRE_UIT\n");
   if (auto view = chrome_browser_view()) {
+    fprintf(stderr, "ChromeBrowserHostImpl::WindowDestroyed() fetched view and view != nullptr\n");
     view->Destroyed();
+    fprintf(stderr, "ChromeBrowserHostImpl::WindowDestroyed() returned from view->Destroyed()\n");
   }
 
+  fprintf(stderr, "ChromeBrowserHostImpl::WindowDestroyed() calling platform_delegate_->CloseHostWindow()\n");
   platform_delegate_->CloseHostWindow();
+  fprintf(stderr, "ChromeBrowserHostImpl::WindowDestroyed() returned from platform_delegate_->CloseHostWindow()\n");
 }
 
 bool ChromeBrowserHostImpl::WillBeDestroyed() const {
