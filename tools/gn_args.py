@@ -361,6 +361,7 @@ def GetRequiredArgs():
       'clang_use_chrome_plugins': False,
 
       'enable_remoting': False,
+      'use_systemd': False,
   }
 
   if platform == 'windows' or platform == 'mac':
