@@ -1400,6 +1400,7 @@ elif platform == 'linux':
     if not options.allowpartial or path_exists(libcef_path):
       valid_build_dir = build_dir
       dst_dir = os.path.join(output_dir, 'Debug')
+      print("copy_file_list: build_dir: %s dst_dir=%s binaries=%s\n" % (build_dir, dst_dir, binaries))
       copy_files_list(build_dir, dst_dir, binaries)
     else:
       sys.stdout.write("No Debug build files.\n")
