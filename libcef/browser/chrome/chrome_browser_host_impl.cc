@@ -569,8 +569,13 @@ void ChromeBrowserHostImpl::WindowDestroyed() {
   }
 
   fprintf(stderr, "ChromeBrowserHostImpl::WindowDestroyed() calling platform_delegate_->CloseHostWindow()\n");
-  platform_delegate_->CloseHostWindow();
-  fprintf(stderr, "ChromeBrowserHostImpl::WindowDestroyed() returned from platform_delegate_->CloseHostWindow()\n");
+  if (platform_delegate_ == nullptr) {
+    fprintf(stderr, "ChromeBrowserHostImpl::WindowDestroyed() platform_delegate_ is NULL\n");
+  } else {
+    fprintf(stderr, "ChromeBrowserHostImpl::WindowDestroyed() platform_delegate_ NON NULL\n");
+    platform_delegate_->CloseHostWindow();
+  }
+ fprintf(stderr, "ChromeBrowserHostImpl::WindowDestroyed() returned from platform_delegate_->CloseHostWindow()\n");
 }
 
 bool ChromeBrowserHostImpl::WillBeDestroyed() const {

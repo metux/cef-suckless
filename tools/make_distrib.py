@@ -310,7 +310,7 @@ def get_script_name(script_name):
 def transfer_tools_files(script_dir, build_dirs, output_dir):
   print("transfer_tools_files\n")
   for build_dir in build_dirs:
-    print("build_dir=%s\n", build_dir)
+    print("build_dir=%s\n" % build_dir)
     is_debug = build_dir.find('Debug') >= 0
     dst_dir_name = 'Debug' if is_debug else 'Release'
     dst_dir = os.path.join(output_dir, dst_dir_name)
@@ -1053,8 +1053,10 @@ if not options.nodocs:
     sys.stdout.write("ERROR: No docs generated.\n")
 
 if mode == 'tools':
-  transfer_tools_files(script_dir, (build_dir_debug, build_dir_release),
+  transfer_tools_files(script_dir, (build_dir_release,build_dir_release),
                        output_dir)
+#  transfer_tools_files(script_dir, (build_dir_debug, build_dir_release),
+#                       output_dir)
 elif platform == 'windows':
   libcef_dll = 'libcef.dll'
   # yapf: disable
