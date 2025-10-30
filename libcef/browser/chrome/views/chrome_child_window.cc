@@ -41,6 +41,17 @@ class ChildWindowDelegate : public CefWindowDelegate {
  public:
   ChildWindowDelegate(const ChildWindowDelegate&) = delete;
   ChildWindowDelegate& operator=(const ChildWindowDelegate&) = delete;
+  ~ChildWindowDelegate() {
+    fprintf(stderr, "ChildWindowDelegate::~ChildWindowDelegate()\n");
+    if (window_ == nullptr)
+        fprintf(stderr, "-> window_ alreay NULL\n");
+    else
+        fprintf(stderr, "-> window_ is NOT NULL\n");
+    if (browser_view_ == null)
+        fprintf(stderr, "-> browser_view_ already NULL\n");
+    else
+        fprintf(stderr, "-> browser_view_ NOT NULL\n");
+ }
 
   static void Create(CefRefPtr<CefBrowserView> browser_view,
                      const CefWindowInfo& window_info,
@@ -53,6 +64,7 @@ class ChildWindowDelegate : public CefWindowDelegate {
   }
 
   void OnWindowCreated(CefRefPtr<CefWindow> window) override {
+    fprintf(stderr, "ChildWindowDelegate::OnWindowCreated() setting window ref\n");
     DCHECK(!window_);
     window_ = window;
 
@@ -63,6 +75,7 @@ class ChildWindowDelegate : public CefWindowDelegate {
   }
 
   void OnWindowDestroyed(CefRefPtr<CefWindow> window) override {
+    fprintf(stderr, "ChildWindowDelegate::OnWindowDestroyed() clearing browser and window refs\n");
     browser_view_ = nullptr;
     window_ = nullptr;
 #if BUILDFLAG(IS_WIN)
