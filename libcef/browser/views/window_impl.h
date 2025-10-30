@@ -32,6 +32,13 @@ class CefWindowImpl
   CefWindowImpl(const CefWindowImpl&) = delete;
   CefWindowImpl& operator=(const CefWindowImpl&) = delete;
 
+  ~CefWindowImpl() {
+    if (widget_ == nullptr)
+      fprintf(stderr, "CefWindowImpl::~CefWindowImpl() widget_ is NULL\n");
+    else
+      fprintf(stderr, "CefWindowImpl::~CefWindowImpl() widget_ NOT NULL\n");
+  }
+
   // Create a new CefWindow instance. |delegate| may be nullptr. |parent_widget|
   // will be used when creating a Chrome child window.
   static CefRefPtr<CefWindowImpl> Create(CefRefPtr<CefWindowDelegate> delegate,

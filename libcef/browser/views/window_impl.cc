@@ -382,7 +382,12 @@ void CefWindowImpl::ShowMenu(CefRefPtr<CefMenuModel> menu_model,
 void CefWindowImpl::Detach() {
   // OnWindowViewDeleted should always be called before Detach().
   DCHECK(!widget_);
-
+  fprintf(stderr, "CefWindowImpl::Detach()\n");
+  if (widget_ != nullptr) {
+     fprintf(stderr, " ==> widget is NOT NULL\n");
+  } else {
+     fprintf(stderr, " ==> widget is NULL\n");
+  }
   ParentClass::Detach();
 }
 
@@ -487,6 +492,7 @@ void CefWindowImpl::OnWindowClosing() {
 void CefWindowImpl::OnWindowViewDeleted() {
   CancelMenu();
 
+  fprintf(stderr, "CefWindowImpl::OnWindowViewDeleted() setting widget_ to NULL\n");
   destroyed_ = true;
   widget_ = nullptr;
 
