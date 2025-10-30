@@ -47,7 +47,7 @@ class ChildWindowDelegate : public CefWindowDelegate {
         fprintf(stderr, "-> window_ alreay NULL\n");
     else
         fprintf(stderr, "-> window_ is NOT NULL\n");
-    if (browser_view_ == null)
+    if (browser_view_ == nullptr)
         fprintf(stderr, "-> browser_view_ already NULL\n");
     else
         fprintf(stderr, "-> browser_view_ NOT NULL\n");
