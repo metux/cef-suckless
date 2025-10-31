@@ -34,7 +34,7 @@ namespace view_util {
 namespace {
 
 // Manages the association between views::View and CefView instances.
-class UserData : public base::SupportsUserData::Data {
+class ViewUtilUserData : public base::SupportsUserData::Data {
  public:
   // Create the initial association between the views::View and the CefView. The
   // CefView owns the views::View at this stage.
@@ -48,12 +48,12 @@ class UserData : public base::SupportsUserData::Data {
     // The CefView should not already be registered.
     DCHECK(!view->GetUserData(UserDataKey()));
 
-    view->SetUserData(UserDataKey(), base::WrapUnique(new UserData(cef_view)));
+    view->SetUserData(UserDataKey(), base::WrapUnique(new ViewUtilUserData(cef_view)));
   }
 
   static CefRefPtr<CefView> GetFor(const views::View* view) {
     DCHECK(view);
-    UserData* data = static_cast<UserData*>(view->GetUserData(UserDataKey()));
+    ViewUtilUserData* data = static_cast<ViewUtilUserData*>(view->GetUserData(UserDataKey()));
     if (data) {
       return data->view_ref_.get();
     }
@@ -73,7 +73,7 @@ class UserData : public base::SupportsUserData::Data {
         CefViewAdapter::GetFor(cef_view)->PassOwnership();
     DCHECK(view);
 
-    UserData* data = static_cast<UserData*>(view->GetUserData(UserDataKey()));
+    ViewUtilUserData* data = static_cast<ViewUtilUserData*>(view->GetUserData(UserDataKey()));
     DCHECK(data);
     data->TakeReference();
 
@@ -92,19 +92,19 @@ class UserData : public base::SupportsUserData::Data {
     views::View* view = adapter->Get();
     DCHECK(view);
 
-    UserData* data = static_cast<UserData*>(view->GetUserData(UserDataKey()));
+    ViewUtilUserData* data = static_cast<ViewUtilUserData*>(view->GetUserData(UserDataKey()));
     DCHECK(data);
     data->ReleaseReference();
   }
 
  private:
-  friend std::default_delete<UserData>;
+  friend std::default_delete<ViewUtilUserData>;
 
-  explicit UserData(CefRefPtr<CefView> cef_view) : view_ref_(cef_view.get()) {
+  explicit ViewUtilUserData(CefRefPtr<CefView> cef_view) : view_ref_(cef_view.get()) {
     DCHECK(view_ref_);
   }
 
-  ~UserData() override {
+  ~ViewUtilUserData() override {
     if (view_) {
       // The CefView does not own the views::View. Remove the CefView's
       // reference to the views::View.
@@ -148,7 +148,7 @@ ui::ColorProvider* GetDefaultColorProvider() {
 const char kDefaultFontList[] = "Arial, Helvetica, 14px";
 
 void Register(CefRefPtr<CefView> view) {
-  UserData::Register(view);
+  ViewUtilUserData::Register(view);
 }
 
 CefRefPtr<CefView> GetFor(const views::View* view, bool find_known_parent) {
@@ -157,13 +157,13 @@ CefRefPtr<CefView> GetFor(const views::View* view, bool find_known_parent) {
   }
 
   if (!find_known_parent) {
-    return UserData::GetFor(view);
+    return ViewUtilUserData::GetFor(view);
   }
 
   CefRefPtr<CefView> cef_view;
   const views::View* current_view = view;
   do {
-    cef_view = UserData::GetFor(current_view);
+    cef_view = ViewUtilUserData::GetFor(current_view);
     if (cef_view) {
       break;
     }
@@ -178,11 +178,11 @@ views::View* GetFor(CefRefPtr<CefView> view) {
 }
 
 std::unique_ptr<views::View> PassOwnership(CefRefPtr<CefView> view) {
-  return UserData::PassOwnership(view);
+  return ViewUtilUserData::PassOwnership(view);
 }
 
 void ResumeOwnership(CefRefPtr<CefView> view) {
-  UserData::ResumeOwnership(view);
+  ViewUtilUserData::ResumeOwnership(view);
 }
 
 CefRefPtr<CefWindow> GetWindowFor(views::Widget* widget) {

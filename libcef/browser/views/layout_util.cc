@@ -14,10 +14,10 @@ namespace layout_util {
 namespace {
 
 // Manages the association between views::View and CefLayout instances.
-class UserData : public base::SupportsUserData::Data {
+class LayoutUtilUserData : public base::SupportsUserData::Data {
  public:
   static CefRefPtr<CefLayout> GetFor(const views::View* view) {
-    UserData* data = static_cast<UserData*>(view->GetUserData(UserDataKey()));
+    LayoutUtilUserData* data = static_cast<LayoutUtilUserData*>(view->GetUserData(UserDataKey()));
     if (data) {
       return data->layout_;
     }
@@ -39,17 +39,17 @@ class UserData : public base::SupportsUserData::Data {
     // The CefLayout previously associated with |owner_view|, if any, will be
     // destroyed by this call.
     owner_view->SetUserData(UserDataKey(),
-                            base::WrapUnique(new UserData(cef_layout)));
+                            base::WrapUnique(new LayoutUtilUserData(cef_layout)));
   }
 
  private:
-  friend std::default_delete<UserData>;
+  friend std::default_delete<LayoutUtilUserData>;
 
-  explicit UserData(CefRefPtr<CefLayout> cef_layout) : layout_(cef_layout) {
+  explicit LayoutUtilUserData(CefRefPtr<CefLayout> cef_layout) : layout_(cef_layout) {
     DCHECK(layout_);
   }
 
-  ~UserData() override { CefLayoutAdapter::GetFor(layout_)->Detach(); }
+  ~LayoutUtilUserData() override { CefLayoutAdapter::GetFor(layout_)->Detach(); }
 
   static void* UserDataKey() {
     // We just need a unique constant. Use the address of a static that
@@ -64,11 +64,11 @@ class UserData : public base::SupportsUserData::Data {
 }  // namespace
 
 CefRefPtr<CefLayout> GetFor(const views::View* view) {
-  return UserData::GetFor(view);
+  return LayoutUtilUserData::GetFor(view);
 }
 
 void Assign(CefRefPtr<CefLayout> layout, views::View* owner_view) {
-  return UserData::Assign(layout, owner_view);
+  return LayoutUtilUserData::Assign(layout, owner_view);
 }
 
 }  // namespace layout_util
