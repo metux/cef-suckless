@@ -53,3 +53,4 @@ Thumbs.db
 # CEF generated files
 .ccls-cache/
 /cef_api_untracked.json
+__pycache__
