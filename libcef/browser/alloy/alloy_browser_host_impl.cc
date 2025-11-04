@@ -306,6 +306,7 @@ bool AlloyBrowserHostImpl::TryCloseBrowser() {
     if (destruction_state_ == DESTRUCTION_STATE_NONE) {
       // Request that the browser close.
       CloseBrowser(false);
+      return true;
     }
 
     // Cancel the close.
