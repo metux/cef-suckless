@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cef/include/cef_debug.h"
 #include "cef/libcef/browser/native/browser_platform_delegate_native_linux.h"
 
 #include "base/no_destructor.h"
@@ -115,9 +116,13 @@ bool CefBrowserPlatformDelegateNativeLinux::CreateHostWindow() {
 }
 
 void CefBrowserPlatformDelegateNativeLinux::CloseHostWindow() {
+  CEF_DEBUG("");
 #if BUILDFLAG(IS_OZONE_X11)
   if (window_x11_) {
+    CEF_DEBUG("window_x11_ NOT NULL ... calling window_x111_->Close()");
     window_x11_->Close();
+  } else {
+    CEF_DEBUG("window_x11_ IS NULL");
   }
 #endif
 }

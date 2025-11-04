@@ -32,6 +32,7 @@
 #include "cef/libcef/common/net/url_util.h"
 #include "cef/libcef/common/request_impl.h"
 #include "cef/libcef/common/values_impl.h"
+#include "cef/include/cef_debug.h"
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/common/webui_url_constants.h"
@@ -265,28 +266,40 @@ AlloyBrowserHostImpl::~AlloyBrowserHostImpl() = default;
 
 void AlloyBrowserHostImpl::CloseBrowser(bool force_close) {
   if (CEF_CURRENTLY_ON_UIT()) {
+    CEF_DEBUG("force=%s", force_close ? "true" : "false");
     // Exit early if a close attempt is already pending and this method is
     // called again from somewhere other than WindowDestroyed().
     if (destruction_state_ >= DESTRUCTION_STATE_PENDING &&
         (IsWindowless() || !window_destroyed_)) {
+      CEF_DEBUG("already in destruction");
       if (force_close && destruction_state_ == DESTRUCTION_STATE_PENDING) {
         // Upgrade the destruction state.
+        CEF_DEBUG("forced --> DESTRUCTION_STATE_PENDING => DESTRUCTION_STATE_ACCEPTED");
         destruction_state_ = DESTRUCTION_STATE_ACCEPTED;
       }
       return;
     }
 
     if (destruction_state_ < DESTRUCTION_STATE_ACCEPTED) {
+      CEF_DEBUG("destruction_state_: not accepted yet");
       destruction_state_ = (force_close ? DESTRUCTION_STATE_ACCEPTED
                                         : DESTRUCTION_STATE_PENDING);
+    }
+
+    switch (destruction_state_) {
+        case DESTRUCTION_STATE_PENDING:  CEF_DEBUG("now DESTRUCTION_STATE_PENDING"); break;
+        case DESTRUCTION_STATE_ACCEPTED: CEF_DEBUG("now DESTRUCTION_STATE_ACCEPTED"); break;
+        default: CEF_DEBUG("destruction_state_: %d", destruction_state_); break;
     }
 
     content::WebContents* contents = web_contents();
     if (contents && contents->NeedToFireBeforeUnloadOrUnloadEvents()) {
       // Will result in a call to BeforeUnloadFired() and, if the close isn't
       // canceled, CloseContents().
+      CEF_DEBUG("calling DispatchBeforeUnload()");
       contents->DispatchBeforeUnload(false /* auto_cancel */);
     } else {
+      CEF_DEBUG("calling CloseContents()");
       CloseContents(contents);
     }
   } else {
@@ -301,17 +314,23 @@ bool AlloyBrowserHostImpl::TryCloseBrowser() {
     return false;
   }
 
+  CEF_DEBUG("");
+
   // Protect against multiple requests to close while the close is pending.
   if (destruction_state_ <= DESTRUCTION_STATE_PENDING) {
+    CEF_DEBUG("not yet pending");
     if (destruction_state_ == DESTRUCTION_STATE_NONE) {
+      CEF_DEBUG("DESTRUCTION_STATE_NONE --> calling CloseBrowser()");
       // Request that the browser close.
       CloseBrowser(false);
     }
 
+    CEF_DEBUG("cancelling the close");
     // Cancel the close.
     return false;
   }
 
+  CEF_DEBUG("allow the close");
   // Allow the close.
   return true;
 }
@@ -497,12 +516,14 @@ void AlloyBrowserHostImpl::WindowDestroyed() {
 
 bool AlloyBrowserHostImpl::WillBeDestroyed() const {
   CEF_REQUIRE_UIT();
+  CEF_DEBUG("%s", (destruction_state_ >= DESTRUCTION_STATE_ACCEPTED ? "yes" : "no"));
   return destruction_state_ >= DESTRUCTION_STATE_ACCEPTED;
 }
 
 void AlloyBrowserHostImpl::DestroyBrowser() {
   CEF_REQUIRE_UIT();
 
+  CEF_DEBUG("setting DESTRUCTION_STATE_COMPLETED");
   destruction_state_ = DESTRUCTION_STATE_COMPLETED;
 
   // Destroy any platform constructs first.
@@ -880,21 +901,29 @@ void AlloyBrowserHostImpl::CloseContents(content::WebContents* source) {
   CEF_REQUIRE_UIT();
 
   if (destruction_state_ == DESTRUCTION_STATE_COMPLETED) {
+    CEF_DEBUG("browser already destroyed");
     return;
   }
+
+  CEF_DEBUG("--> window_destroyed_=%s", window_destroyed_ ? "true" : "false");
+  CEF_DEBUG("--> IsWindowless()=%s", IsWindowless() ? "true" : "false");
 
   bool close_browser = true;
 
   // If this method is called in response to something other than
   // WindowDestroyed() ask the user if the browser should close.
   if (client_.get() && (IsWindowless() || !window_destroyed_)) {
+    CEF_DEBUG("--> got client and either windowless or !window_destroyed_");
     CefRefPtr<CefLifeSpanHandler> handler = client_->GetLifeSpanHandler();
     if (handler.get()) {
+      CEF_DEBUG("--> got a handler. calling it's DoClose()");
       close_browser = !handler->DoClose(this);
+      CEF_DEBUG("--> close_browser=%s", close_browser ? "true":"false");
     }
   }
 
   if (close_browser) {
+    CEF_DEBUG("--> now closing browser");
     if (destruction_state_ != DESTRUCTION_STATE_ACCEPTED) {
       destruction_state_ = DESTRUCTION_STATE_ACCEPTED;
     }
@@ -903,23 +932,32 @@ void AlloyBrowserHostImpl::CloseContents(content::WebContents* source) {
       // A window exists so try to close it using the platform method. Will
       // result in a call to WindowDestroyed() if/when the window is destroyed
       // via the platform window destruction mechanism.
+      CEF_DEBUG("a window exists and not already destroyed yet");
+      CEF_DEBUG("--> calling platform_delegate_->CloseHostWindow()");
       platform_delegate_->CloseHostWindow();
     } else {
+      CEF_DEBUG("window either not existing or already destroyed");
+      CEF_DEBUG("--> cant call the platform delegate");
       // Keep a reference to the browser while it's in the process of being
       // destroyed.
       CefRefPtr<AlloyBrowserHostImpl> browser(this);
 
       if (source) {
+        CEF_DEBUG("--> now telling the browser process to shut down");
         // Try to fast shutdown the associated process.
         source->GetPrimaryMainFrame()->GetProcess()->FastShutdownIfPossible(
             1, false);
+      } else {
+        CEF_DEBUG("no WebContents instance - can't do anything");
       }
 
       // No window exists. Destroy the browser immediately. Don't call other
       // browser methods after calling DestroyBrowser().
+      CEF_DEBUG("now calling DestroyBrowser()");
       DestroyBrowser();
     }
   } else if (destruction_state_ != DESTRUCTION_STATE_NONE) {
+    CEF_DEBUG("setting destruction_state_ = DESTRUCTION_STATE_NONE");
     destruction_state_ = DESTRUCTION_STATE_NONE;
   }
 }
@@ -953,8 +991,10 @@ void AlloyBrowserHostImpl::BeforeUnloadFired(content::WebContents* source,
                                              bool proceed,
                                              bool* proceed_to_fire_unload) {
   if (destruction_state_ == DESTRUCTION_STATE_ACCEPTED || proceed) {
+    CEF_DEBUG("proceed_to_fire_unload := true");
     *proceed_to_fire_unload = true;
   } else if (!proceed) {
+    CEF_DEBUG("proceed_to_fire_unload := false");
     *proceed_to_fire_unload = false;
     destruction_state_ = DESTRUCTION_STATE_NONE;
   }
@@ -1225,9 +1265,11 @@ void AlloyBrowserHostImpl::AccessibilityLocationChangesReceived(
 }
 
 void AlloyBrowserHostImpl::WebContentsDestroyed() {
+  CEF_DEBUG("");
   // In case we're notified before the CefBrowserContentsDelegate,
   // reset it first for consistent state in DestroyWebContents.
   if (GetWebContents()) {
+    CEF_DEBUG("GetWebContents() returned non-null ... calling contents_delegate_.WebContentsDestroyed()");
     contents_delegate_.WebContentsDestroyed();
   }
 
@@ -1236,9 +1278,11 @@ void AlloyBrowserHostImpl::WebContentsDestroyed() {
   DestroyWebContents(wc);
 
   if (destruction_state_ < DESTRUCTION_STATE_COMPLETED) {
+    CEF_DEBUG("destruction_state_ < DESTRUCTION_STATE_COMPLETED. not called via DestroyBrowser() ?");
     // We were not called via DestroyBrowser. This can occur when (for example)
     // a pending popup WebContents is destroyed during parent WebContents
     // destruction. Try to close the associated browser now.
+    CEF_DEBUG("destroying parent browser");
     CEF_POST_TASK(CEF_UIT, base::BindOnce(&AlloyBrowserHostImpl::CloseBrowser,
                                           this, /*force_close=*/true));
   }

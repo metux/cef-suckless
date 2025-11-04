@@ -4,6 +4,7 @@
 
 #include "cef/libcef/browser/chrome/views/browser_platform_delegate_chrome_views.h"
 
+#include "cef/include/cef_debug.h"
 #include "cef/include/views/cef_window.h"
 #include "cef/libcef/browser/views/window_impl.h"
 #include "cef/libcef/common/api_version_util.h"
@@ -104,8 +105,18 @@ void CefBrowserPlatformDelegateChromeViews::BrowserDestroyed(
 }
 
 void CefBrowserPlatformDelegateChromeViews::CloseHostWindow() {
+  CEF_DEBUG("");
   views::Widget* widget = GetWindowWidget();
+  if (widget) {
+    CEF_DEBUG("got widget");
+    if (widget->IsClosed()) {
+      CEF_DEBUG("widget already closed");
+    } else {
+      CEF_DEBUG("widget not closed yet");
+    }
+  }
   if (widget && !widget->IsClosed()) {
+    CEF_DEBUG("calling widget->Close()");
     widget->Close();
   }
 }

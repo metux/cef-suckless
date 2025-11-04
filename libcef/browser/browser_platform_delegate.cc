@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cef/include/cef_debug.h"
 #include "cef/libcef/browser/browser_platform_delegate.h"
 
 #include "base/command_line.h"
@@ -59,6 +60,7 @@ class PopupWindowDelegate : public CefWindowDelegate {
   bool CanClose(CefRefPtr<CefWindow> window) override {
     CefRefPtr<CefBrowser> browser = browser_view_->GetBrowser();
     if (browser) {
+      CEF_DEBUG("calling browser->GetHost()->TryCloseBrowser()");
       return browser->GetHost()->TryCloseBrowser();
     }
     return true;
@@ -165,6 +167,7 @@ bool CefBrowserPlatformDelegate::CreateHostWindow() {
 }
 
 void CefBrowserPlatformDelegate::CloseHostWindow() {
+  CEF_DEBUG("");
   DCHECK(false);
 }
 
