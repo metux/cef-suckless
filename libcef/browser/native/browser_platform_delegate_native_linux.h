@@ -20,6 +20,8 @@ class CefBrowserPlatformDelegateNativeLinux
   CefBrowserPlatformDelegateNativeLinux(const CefWindowInfo& window_info,
                                         SkColor background_color);
 
+  ~CefBrowserPlatformDelegateNativeLinux();
+
   // CefBrowserPlatformDelegate methods:
   void BrowserDestroyed(CefBrowserHostBase* browser) override;
   bool CreateHostWindow() override;

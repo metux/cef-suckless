@@ -295,3 +295,10 @@ CefBrowserPlatformDelegateNativeLinux::TranslateWebKeyEvent(
   }
   return input::NativeWebKeyboardEvent(ui_event);
 }
+
+CefBrowserPlatformDelegateNativeLinux::~CefBrowserPlatformDelegateNativeLinux() {
+    if (window_x11_ != nullptr) {
+        delete window_x11_;
+        window_x11_ = nullptr;
+    }
+}

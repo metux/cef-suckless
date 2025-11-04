@@ -76,6 +76,7 @@ class CefWindowX11 : public ui::PlatformEventDispatcher,
   const raw_ptr<x11::Connection> connection_;
   x11::Window parent_xwindow_;
   x11::Window xwindow_;
+  x11::Window destroy_child_window_ = x11::Window::None;
 
   // Events selected on |xwindow_|.
   x11::ScopedEventSelector xwindow_events_;
