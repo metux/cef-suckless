@@ -3,6 +3,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cef/include/cef_debug.h"
 #include "cef/libcef/browser/native/window_x11.h"
 
 // Include first due to redefinition of x11::EventMask.
@@ -195,26 +196,37 @@ CefWindowX11::CefWindowX11(CefRefPtr<CefBrowserHostBase> browser,
 }
 
 CefWindowX11::~CefWindowX11() {
+  CEF_DEBUG("checking whether window already already None");
   DCHECK_EQ(xwindow_, x11::Window::None);
   DCHECK(ui::X11EventSource::HasInstance());
+  CEF_DEBUG("calling connection_->RemoveEventObserver()");
   connection_->RemoveEventObserver(this);
+  CEF_DEBUG("calling ui::X11EventSource::GetInstance()->RemovePlatformEventDispatcher(this)");
   ui::X11EventSource::GetInstance()->RemovePlatformEventDispatcher(this);
+  CEF_DEBUG("destructor done");
 }
 
 void CefWindowX11::Close() {
+  CEF_DEBUG("");
   if (xwindow_ == x11::Window::None) {
+    CEF_DEBUG("xwindow_ = x11::Window::None");
     return;
   }
 
+  CEF_DEBUG("calling ui::SendClientMessage() -- sending WM_DELETEWINDOW");
   ui::SendClientMessage(
       xwindow_, xwindow_, x11::GetAtom(kWMProtocols),
       {static_cast<uint32_t>(x11::GetAtom(kWMDeleteWindow)),
        static_cast<uint32_t>(x11::Time::CurrentTime), 0, 0, 0},
       x11::EventMask::NoEvent);
+  CEF_DEBUG("returned from ui::SendClientMessage()");
 
   auto host = GetHost();
   if (host) {
+    CEF_DEBUG("have a host: calling host->Close()");
     host->Close();
+  } else {
+    CEF_DEBUG("no host anymore");
   }
 }
 
@@ -338,15 +350,19 @@ gfx::Rect CefWindowX11::GetBoundsInScreen() {
 
 views::DesktopWindowTreeHostLinux* CefWindowX11::GetHost() {
   if (browser_.get()) {
+    CEF_DEBUG("have a browser xwindow_=%0X destroy_child_window_=%0X", xwindow_, destroy_child_window_);
     auto child = FindChild(connection_, xwindow_);
 
     // if our window had been killed because some parent died, FindChild()
     // won't find it anymore - so try the value previously recorded on
     // DestroyNotify event. Need the XID as key into WindowTreeHost's table.
-    if (child == x11::Window::None)
+    if (child == x11::Window::None) {
+      CEF_DEBUG("child not found. trying destroy_child_window_");
       child = destroy_child_window_;
+    }
 
     if (child != x11::Window::None) {
+      CEF_DEBUG("found child: %X", child);
       return static_cast<views::DesktopWindowTreeHostLinux*>(
           views::DesktopWindowTreeHostLinux::GetHostForWidget(
               static_cast<gfx::AcceleratedWidget>(child)));
@@ -356,6 +372,7 @@ views::DesktopWindowTreeHostLinux* CefWindowX11::GetHost() {
 }
 
 bool CefWindowX11::CanDispatchEvent(const ui::PlatformEvent& event) {
+  CEF_DEBUG("");
   auto* dispatching_event = connection_->dispatching_event();
   return dispatching_event && IsTargetedBy(*dispatching_event);
 }
@@ -407,18 +424,25 @@ bool CefWindowX11::TopLevelAlwaysOnTop() const {
 // called when the browser window needs to be destroyed.
 //
 void CefWindowX11::DestroyMyself() {
+    CEF_DEBUG("going to destroy myself");
     if (!browser_ || browser_->TryCloseBrowser()) {
+        CEF_DEBUG("BRANCH A can close the browser ... TryCloseBrowser() returned true");
+
         // Allow the close.
         connection_->DestroyWindow({xwindow_});
         xwindow_ = x11::Window::None;
 
         if (browser_) {
+            CEF_DEBUG("still have a browser: sending WindowDestroyed");
             // Force the browser to be destroyed and release the reference
             // added in PlatformCreateWindow().
             AlloyBrowserHostImpl::FromBaseChecked(browser_)->WindowDestroyed();
         }
         // here the object is already destroyed
+    } else {
+        CEF_DEBUG("BRANCH B TryCloseBrowser() denied -- cant do anything");
     }
+    CEF_DEBUG("returning");
 }
 
 void CefWindowX11::ProcessXEvent(const x11::Event& event) {
@@ -449,6 +473,7 @@ void CefWindowX11::ProcessXEvent(const x11::Event& event) {
       x11::Atom protocol = static_cast<x11::Atom>(client->data.data32[0]);
       if (protocol == x11::GetAtom(kWMDeleteWindow)) {
         // We have received a close message from the window manager.
+        CEF_DEBUG("WMDeleteWindow --> calling browser_->TryCloseBrowser");
         DestroyMyself();
       } else if (protocol == x11::GetAtom(kNetWMPing)) {
         x11::ClientMessageEvent reply_event = *client;
@@ -498,10 +523,14 @@ void CefWindowX11::ProcessXEvent(const x11::Event& event) {
       }
     }
   } else if (auto* destroy = event.As<x11::DestroyNotifyEvent>()) {
+    CEF_DEBUG("x11::DestroyNotifyEvent --> window=%0X recv=%0X", destroy->window, destroy->event);
+    CEF_DEBUG("--> our xwindow_=%0X", xwindow_);
     // store the ID of destroyed window, so we can look it up later in GetHost()
-    if (destroy->event == xwindow_)
+    if (destroy->event == xwindow_) {
+      CEF_DEBUG("recevied for our window, but destroyed one is %0X", destroy->window);
       destroy_child_window_ = destroy->window;
-
+    }
+    CEF_DEBUG("NOW calling DestroyMyself()");
     DestroyMyself();
   }
 }
@@ -556,6 +585,7 @@ bool CefWindowX11::IsTargetedBy(const x11::Event& xev) const {
     return visibility->window == xwindow_;
   }
   if (auto* destroy = xev.As<x11::DestroyNotifyEvent>()) {
+    CEF_DEBUG("DestroyNotifyEvent: ev=%X | win=%X | our=%X", destroy->window, destroy->event, xwindow_);
     return ((destroy->window == xwindow_) || (destroy->event == xwindow_));
   }
   return false;

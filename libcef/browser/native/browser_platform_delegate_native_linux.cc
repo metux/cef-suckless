@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cef/include/cef_debug.h"
 #include "cef/libcef/browser/native/browser_platform_delegate_native_linux.h"
 
 #include "base/no_destructor.h"
@@ -34,10 +35,13 @@ CefBrowserPlatformDelegateNativeLinux::CefBrowserPlatformDelegateNativeLinux(
 void CefBrowserPlatformDelegateNativeLinux::BrowserDestroyed(
     CefBrowserHostBase* browser) {
   CefBrowserPlatformDelegateNativeAura::BrowserDestroyed(browser);
-
+  CEF_DEBUG("");
   if (host_window_created_) {
+    CEF_DEBUG("host_window_created_");
     // Release the reference added in CreateHostWindow().
     browser->Release();
+  } else {
+    CEF_DEBUG("not host_window_created_");
   }
 }
 
@@ -115,9 +119,14 @@ bool CefBrowserPlatformDelegateNativeLinux::CreateHostWindow() {
 }
 
 void CefBrowserPlatformDelegateNativeLinux::CloseHostWindow() {
+  CEF_DEBUG("");
 #if BUILDFLAG(IS_OZONE_X11)
   if (window_x11_) {
+    CEF_DEBUG("window_x11_ NOT NULL ... calling window_x111_->Close()");
     window_x11_->Close();
+    CEF_DEBUG("window_x11_->Close has finished\n");
+  } else {
+    CEF_DEBUG("window_x11_ IS NULL");
   }
 #endif
 }
@@ -297,8 +306,12 @@ CefBrowserPlatformDelegateNativeLinux::TranslateWebKeyEvent(
 }
 
 CefBrowserPlatformDelegateNativeLinux::~CefBrowserPlatformDelegateNativeLinux() {
+    CEF_DEBUG("destructor ...");
     if (window_x11_ != nullptr) {
+        CEF_DEBUG("need to delete window object");
         delete window_x11_;
         window_x11_ = nullptr;
+    } else {
+        CEF_DEBUG("window object already gone");
     }
 }
