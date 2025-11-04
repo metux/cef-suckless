@@ -7,6 +7,7 @@
 #include <tuple>
 
 #include "base/logging.h"
+#include "cef/include/cef_debug.h"
 #include "cef/libcef/browser/browser_guest_util.h"
 #include "cef/libcef/browser/browser_info_manager.h"
 #include "cef/libcef/browser/browser_platform_delegate.h"
@@ -282,6 +283,8 @@ void CefBrowserHostBase::DestroyWebContents(
     content::WebContents* web_contents) {
   CEF_REQUIRE_UIT();
 
+  CEF_DEBUG("");
+
   // GetWebContents() should return nullptr at this point.
   DCHECK(!GetWebContents());
 
@@ -290,13 +293,16 @@ void CefBrowserHostBase::DestroyWebContents(
 
   // 1. Notify the platform delegate. With Views this will result in a call to
   // CefBrowserViewDelegate::OnBrowserDestroyed().
+  CEF_DEBUG("calling platform_delegate_->NotifyBrowserDestroyed()");
   platform_delegate_->NotifyBrowserDestroyed();
 
   // 2. Notify the browser's LifeSpanHandler. This must always be the last
   // notification for this browser.
+  CEF_DEBUG("calling my own OnBeforeClose()");
   OnBeforeClose();
 
   // Notify any observers that may have state associated with this browser.
+  CEF_DEBUG("calling OnBrowserDestroyed()");
   OnBrowserDestroyed();
 
   // Free objects that may have references to the WebContents.
@@ -314,6 +320,8 @@ void CefBrowserHostBase::DestroyWebContents(
 
 void CefBrowserHostBase::DestroyBrowser() {
   CEF_REQUIRE_UIT();
+
+  CEF_DEBUG("");
 
   // The WebContents should no longer be observed.
   DCHECK(!contents_delegate_.web_contents());
@@ -1380,8 +1388,11 @@ void CefBrowserHostBase::OnAfterCreated() {
 
 void CefBrowserHostBase::OnBeforeClose() {
   CEF_REQUIRE_UIT();
+  CEF_DEBUG("");
   if (client_) {
+    CEF_DEBUG("have a client");
     if (auto handler = client_->GetLifeSpanHandler()) {
+      CEF_DEBUG("calling lifespan handler -> OnBeforeClose()");
       handler->OnBeforeClose(this);
     }
   }
@@ -1390,6 +1401,8 @@ void CefBrowserHostBase::OnBeforeClose() {
 
 void CefBrowserHostBase::OnBrowserDestroyed() {
   CEF_REQUIRE_UIT();
+
+  CEF_DEBUG("");
 
   // Destroy any platform constructs.
   if (file_dialog_manager_) {

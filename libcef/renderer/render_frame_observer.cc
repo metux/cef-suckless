@@ -15,6 +15,7 @@
 #endif
 #endif
 
+#include "cef/include/cef_debug.h"
 #include "cef/libcef/common/app_manager.h"
 #include "cef/libcef/renderer/blink_glue.h"
 #include "cef/libcef/renderer/browser_impl.h"
@@ -58,8 +59,12 @@ void CefRenderFrameObserver::WasShown() {
 }
 
 void CefRenderFrameObserver::DidFailProvisionalLoad() {
+  CEF_DEBUG("");
   if (frame_) {
+    CEF_DEBUG("calling OnLoadError()");
     OnLoadError();
+  } else {
+    CEF_DEBUG("frame_ == NULL");
   }
 }
 
@@ -218,6 +223,7 @@ void CefRenderFrameObserver::OnLoadStart() {
 }
 
 void CefRenderFrameObserver::OnLoadError() {
+  CEF_DEBUG("");
   CefRefPtr<CefApp> app = CefAppManager::Get()->GetApplication();
   if (app.get()) {
     CefRefPtr<CefRenderProcessHandler> handler = app->GetRenderProcessHandler();
@@ -226,14 +232,17 @@ void CefRenderFrameObserver::OnLoadError() {
       // Error codes were removed from DidFailProvisionalLoad() so we now always
       // pass the same value.
       if (load_handler.get()) {
+        CEF_DEBUG("got load_handler");
         const cef_errorcode_t errorCode =
             static_cast<cef_errorcode_t>(net::ERR_ABORTED);
         const std::string& errorText = net::ErrorToString(errorCode);
         blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
         CefRefPtr<CefBrowserImpl> browserPtr =
             CefBrowserImpl::GetBrowserForMainFrame(frame->Top());
+        CEF_DEBUG("calling load_handler->OnLoadError()");
         load_handler->OnLoadError(browserPtr.get(), frame_, errorCode,
                                   errorText, frame_->GetURL());
+        CEF_DEBUG("returned from load_handler->OnLoadError()");
       }
     }
   }
