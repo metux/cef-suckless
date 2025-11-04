@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cef/libcef/browser/devtools/devtools_window_runner.h"
+#include "cef/include/cef_debug.h"
 
 #include "cef/libcef/browser/chrome/chrome_browser_host_impl.h"
 #include "cef/libcef/browser/request_context_impl.h"
@@ -50,6 +51,7 @@ void CefDevToolsWindowRunner::ShowDevTools(
 void CefDevToolsWindowRunner::CloseDevTools() {
   CEF_REQUIRE_UIT();
   if (browser_host_) {
+    CEF_DEBUG("calling browser_host_->TryCloseBrowser()");
     browser_host_->TryCloseBrowser();
     browser_host_ = nullptr;
   }
