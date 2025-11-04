@@ -154,7 +154,8 @@ CefWindowX11::CefWindowX11(CefRefPtr<CefBrowserHostBase> browser,
 
   auto event_mask = x11::EventMask::FocusChange |
                     x11::EventMask::StructureNotify |
-                    x11::EventMask::PropertyChange;
+                    x11::EventMask::PropertyChange |
+                    x11::EventMask::SubstructureNotify;
   xwindow_events_ = connection_->ScopedSelectEvent(xwindow_, event_mask);
 
   connection_->Flush();
@@ -338,6 +339,13 @@ gfx::Rect CefWindowX11::GetBoundsInScreen() {
 views::DesktopWindowTreeHostLinux* CefWindowX11::GetHost() {
   if (browser_.get()) {
     auto child = FindChild(connection_, xwindow_);
+
+    // if our window had been killed because some parent died, FindChild()
+    // won't find it anymore - so try the value previously recorded on
+    // DestroyNotify event. Need the XID as key into WindowTreeHost's table.
+    if (child == x11::Window::None)
+      child = destroy_child_window_;
+
     if (child != x11::Window::None) {
       return static_cast<views::DesktopWindowTreeHostLinux*>(
           views::DesktopWindowTreeHostLinux::GetHostForWidget(
@@ -490,6 +498,12 @@ void CefWindowX11::ProcessXEvent(const x11::Event& event) {
         }
       }
     }
+  } else if (auto* destroy = event.As<x11::DestroyNotifyEvent>()) {
+    // store the ID of destroyed window, so we can look it up later in GetHost()
+    if (destroy->event == xwindow_)
+      destroy_child_window_ = destroy->window;
+
+    DestroyMyself();
   }
 }
 
@@ -541,6 +555,9 @@ bool CefWindowX11::IsTargetedBy(const x11::Event& xev) const {
   }
   if (auto* visibility = xev.As<x11::VisibilityNotifyEvent>()) {
     return visibility->window == xwindow_;
+  }
+  if (auto* destroy = xev.As<x11::DestroyNotifyEvent>()) {
+    return ((destroy->window == xwindow_) || (destroy->event == xwindow_));
   }
   return false;
 }
