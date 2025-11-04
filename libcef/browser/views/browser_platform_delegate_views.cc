@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cef/include/cef_debug.h"
 #include "cef/libcef/browser/views/browser_platform_delegate_views.h"
 
 #include <utility>
@@ -93,7 +94,16 @@ bool CefBrowserPlatformDelegateViews::CreateHostWindow() {
 }
 
 void CefBrowserPlatformDelegateViews::CloseHostWindow() {
+  CEF_DEBUG("");
   views::Widget* widget = GetWindowWidget();
+  if (widget) {
+    CEF_DEBUG("got widget");
+    if (widget->IsClosed()) {
+      CEF_DEBUG("widget already closed");
+    } else {
+      CEF_DEBUG("widget not closed yet");
+    }
+  }
   if (widget && !widget->IsClosed()) {
     widget->Close();
   }

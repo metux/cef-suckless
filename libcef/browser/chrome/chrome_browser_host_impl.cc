@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cef/libcef/browser/chrome/chrome_browser_host_impl.h"
+#include "cef/include/cef_debug.h"
 
 #include "base/logging.h"
 #include "base/notimplemented.h"
@@ -178,6 +179,7 @@ void ChromeBrowserHostImpl::CloseBrowser(bool force_close) {
   }
 
   if (!force_close) {
+    CEF_DEBUG("not force_close - calling TryCloseBrowser");
     TryCloseBrowser();
     return;
   }
