@@ -166,9 +166,11 @@
 //   __attribute__((format(wprintf, format_param, dots_param)))
 
 // Sanitizers annotations.
+#ifndef __GNUC__
 #if defined(__has_attribute)
 #if __has_attribute(no_sanitize)
 #define NO_SANITIZE(what) __attribute__((no_sanitize(what)))
+#endif
 #endif
 #endif
 #if !defined(NO_SANITIZE)
