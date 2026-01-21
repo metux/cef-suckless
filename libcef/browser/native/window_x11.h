@@ -68,6 +68,8 @@ class CefWindowX11 : public ui::PlatformEventDispatcher,
 
   bool IsTargetedBy(const x11::Event& xev) const;
 
+  void DestroyMyself();
+
   CefRefPtr<CefBrowserHostBase> browser_;
 
   // The display and the native X window hosting the root window.
