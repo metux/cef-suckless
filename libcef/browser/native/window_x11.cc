@@ -395,6 +395,25 @@ bool CefWindowX11::TopLevelAlwaysOnTop() const {
   return false;
 }
 
+//
+// called when the browser window needs to be destroyed.
+//
+void CefWindowX11::DestroyMyself() {
+    if (!browser_ || browser_->TryCloseBrowser()) {
+        // Allow the close.
+        connection_->DestroyWindow({xwindow_});
+        xwindow_ = x11::Window::None;
+
+        if (browser_) {
+            // Force the browser to be destroyed and release the reference
+            // added in PlatformCreateWindow().
+            AlloyBrowserHostImpl::FromBaseChecked(browser_)->WindowDestroyed();
+        }
+
+        delete this;
+    }
+}
+
 void CefWindowX11::ProcessXEvent(const x11::Event& event) {
   if (auto* configure = event.As<x11::ConfigureNotifyEvent>()) {
     DCHECK_EQ(xwindow_, configure->window);
@@ -423,19 +442,7 @@ void CefWindowX11::ProcessXEvent(const x11::Event& event) {
       x11::Atom protocol = static_cast<x11::Atom>(client->data.data32[0]);
       if (protocol == x11::GetAtom(kWMDeleteWindow)) {
         // We have received a close message from the window manager.
-        if (!browser_ || browser_->TryCloseBrowser()) {
-          // Allow the close.
-          connection_->DestroyWindow({xwindow_});
-          xwindow_ = x11::Window::None;
-
-          if (browser_) {
-            // Force the browser to be destroyed and release the reference
-            // added in PlatformCreateWindow().
-            AlloyBrowserHostImpl::FromBaseChecked(browser_)->WindowDestroyed();
-          }
-
-          delete this;
-        }
+        DestroyMyself();
       } else if (protocol == x11::GetAtom(kNetWMPing)) {
         x11::ClientMessageEvent reply_event = *client;
         reply_event.window = parent_xwindow_;
