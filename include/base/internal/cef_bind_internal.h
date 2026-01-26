@@ -1281,10 +1281,10 @@ template <int i,
           typename Param>
 struct ParamCanBeBound {
  private:
-  using UnwrappedParam = BindArgument<i>::template ForwardedAs<
+  using UnwrappedParam = typename BindArgument<i>::template ForwardedAs<
       Unwrapped>::template ToParamWithType<Param>;
   using BoundStorage =
-      BindArgument<i>::template BoundAs<Arg>::template StoredAs<Storage>;
+      typename BindArgument<i>::template BoundAs<Arg>::template StoredAs<Storage>;
 
   // With `BindRepeating()`, there are two decision points for how to handle a
   // move-only type:
