@@ -5,6 +5,7 @@
 #ifndef CEF_LIBCEF_BROWSER_NATIVE_BROWSER_PLATFORM_DELEGATE_NATIVE_LINUX_H_
 #define CEF_LIBCEF_BROWSER_NATIVE_BROWSER_PLATFORM_DELEGATE_NATIVE_LINUX_H_
 
+#include "include/cef_debug.h"
 #include "base/memory/raw_ptr.h"
 #include "cef/libcef/browser/native/browser_platform_delegate_native_aura.h"
 #include "ui/base/ozone_buildflags.h"
@@ -20,6 +21,9 @@ class CefBrowserPlatformDelegateNativeLinux
   CefBrowserPlatformDelegateNativeLinux(const CefWindowInfo& window_info,
                                         SkColor background_color);
 
+  ~CefBrowserPlatformDelegateNativeLinux() {
+    CEF_DEBUG("destructor ...");
+  }
   // CefBrowserPlatformDelegate methods:
   void BrowserDestroyed(CefBrowserHostBase* browser) override;
   bool CreateHostWindow() override;

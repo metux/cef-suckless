@@ -323,6 +323,7 @@ bool AlloyBrowserHostImpl::TryCloseBrowser() {
       CEF_DEBUG("DESTRUCTION_STATE_NONE --> calling CloseBrowser()");
       // Request that the browser close.
       CloseBrowser(false);
+      return true;
     }
 
     CEF_DEBUG("cancelling the close");

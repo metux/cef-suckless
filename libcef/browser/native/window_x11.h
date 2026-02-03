@@ -68,7 +68,11 @@ class CefWindowX11 : public ui::PlatformEventDispatcher,
 
   bool IsTargetedBy(const x11::Event& xev) const;
 
-  void DestroyMyself();
+  void DestroyMyself2();
+
+  __attribute__((noinline)) void DeleteMe(void);
+  __attribute__((noinline)) void DestroyA(void);
+  __attribute__((noinline)) void DestroyB(void);
 
   CefRefPtr<CefBrowserHostBase> browser_;
 

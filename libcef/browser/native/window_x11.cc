@@ -198,8 +198,11 @@ CefWindowX11::CefWindowX11(CefRefPtr<CefBrowserHostBase> browser,
 CefWindowX11::~CefWindowX11() {
   DCHECK_EQ(xwindow_, x11::Window::None);
   DCHECK(ui::X11EventSource::HasInstance());
+  CEF_DEBUG("calling connection_->RemoveEventObserver()");
   connection_->RemoveEventObserver(this);
+  CEF_DEBUG("calling ui::X11EventSource::GetInstance()->RemovePlatformEventDispatcher(this)");
   ui::X11EventSource::GetInstance()->RemovePlatformEventDispatcher(this);
+  CEF_DEBUG("destructor done");
 }
 
 void CefWindowX11::Close() {
@@ -368,6 +371,7 @@ views::DesktopWindowTreeHostLinux* CefWindowX11::GetHost() {
 }
 
 bool CefWindowX11::CanDispatchEvent(const ui::PlatformEvent& event) {
+  CEF_DEBUG("");
   auto* dispatching_event = connection_->dispatching_event();
   return dispatching_event && IsTargetedBy(*dispatching_event);
 }
@@ -382,6 +386,7 @@ uint32_t CefWindowX11::DispatchEvent(const ui::PlatformEvent& event) {
 }
 
 void CefWindowX11::OnEvent(const x11::Event& event) {
+  CEF_DEBUG("");
   if (!IsTargetedBy(event)) {
     return;
   }
@@ -415,27 +420,62 @@ bool CefWindowX11::TopLevelAlwaysOnTop() const {
   return false;
 }
 
+void CefWindowX11::DestroyA() {
+    CEF_DEBUG("can close the browser ... TryCloseBrowser() returned true");
+    // Allow the close.
+    connection_->DestroyWindow({xwindow_});
+    xwindow_ = x11::Window::None;
+    if (browser_) {
+        CEF_DEBUG("still have a browser: sending WindowDestroyed");
+        // Force the browser to be destroyed and release the reference
+        // added in PlatformCreateWindow().
+        AlloyBrowserHostImpl::FromBaseChecked(browser_)->WindowDestroyed();
+    }
+    DeleteMe();
+}
+
+void CefWindowX11::DestroyB() {
+    CEF_DEBUG("TryCloseBrowser() denied ... doing it anyways");
+
+    // Allow the close.
+    connection_->DestroyWindow({xwindow_});
+    xwindow_ = x11::Window::None;
+    if (browser_) {
+        CEF_DEBUG("still have a browser: sending WindowDestroyed");
+        // Force the browser to be destroyed and release the reference
+        // added in PlatformCreateWindow().
+        AlloyBrowserHostImpl::FromBaseChecked(browser_)->WindowDestroyed();
+    }
+    DeleteMe();
+}
+
 //
 // called when the browser window needs to be destroyed.
 //
-void CefWindowX11::DestroyMyself() {
+void CefWindowX11::DestroyMyself2() {
+    CEF_DEBUG("going to destroy myself");
     if (!browser_ || browser_->TryCloseBrowser()) {
-        CEF_DEBUG("can close the browser ... TryCloseBrowser() returned true");
-        // Allow the close.
-        connection_->DestroyWindow({xwindow_});
-        xwindow_ = x11::Window::None;
-
-        if (browser_) {
-            CEF_DEBUG("still have a browser: sending WindowDestroyed");
-            // Force the browser to be destroyed and release the reference
-            // added in PlatformCreateWindow().
-            AlloyBrowserHostImpl::FromBaseChecked(browser_)->WindowDestroyed();
-        }
-
-        delete this;
+        CEF_DEBUG("calling DestroyA()");
+        DestroyA();
     } else {
-      CEF_DEBUG("TryCloseBrowser() denied");
+        CEF_DEBUG("calling DestroyB()");
+        DestroyB();
     }
+    CEF_DEBUG("returning");
+}
+
+void CefWindowX11::DeleteMe(void) {
+    CEF_DEBUG("not actually deleting myself");
+
+  DCHECK_EQ(xwindow_, x11::Window::None);
+  DCHECK(ui::X11EventSource::HasInstance());
+  CEF_DEBUG("calling connection_->RemoveEventObserver()");
+  connection_->RemoveEventObserver(this);
+  CEF_DEBUG("calling ui::X11EventSource::GetInstance()->RemovePlatformEventDispatcher(this)");
+  ui::X11EventSource::GetInstance()->RemovePlatformEventDispatcher(this);
+  CEF_DEBUG("destructor done");
+
+//    delete this;
 }
 
 void CefWindowX11::ProcessXEvent(const x11::Event& event) {
@@ -467,7 +507,7 @@ void CefWindowX11::ProcessXEvent(const x11::Event& event) {
       if (protocol == x11::GetAtom(kWMDeleteWindow)) {
         // We have received a close message from the window manager.
         CEF_DEBUG("WMDeleteWindow --> calling browser_->TryCloseBrowser");
-        DestroyMyself();
+        DestroyMyself2();
       } else if (protocol == x11::GetAtom(kNetWMPing)) {
         x11::ClientMessageEvent reply_event = *client;
         reply_event.window = parent_xwindow_;
@@ -523,8 +563,8 @@ void CefWindowX11::ProcessXEvent(const x11::Event& event) {
       CEF_DEBUG("recevied for our window, but destroyed one is %0X", destroy->window);
       destroy_child_window_ = destroy->window;
     }
-    CEF_DEBUG("NOW calling DestroyMyself()");
-    DestroyMyself();
+    CEF_DEBUG("NOW calling DestroyMyself2() ---");
+    DestroyMyself2();
   }
 }
 
