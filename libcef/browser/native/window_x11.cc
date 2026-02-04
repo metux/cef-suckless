@@ -195,7 +195,7 @@ CefWindowX11::CefWindowX11(CefRefPtr<CefBrowserHostBase> browser,
   }
 }
 
-CefWindowX11::Cleanup() {
+void CefWindowX11::Cleanup(void) {
   DCHECK_EQ(xwindow_, x11::Window::None);
   DCHECK(ui::X11EventSource::HasInstance());
   CEF_DEBUG("calling connection_->RemoveEventObserver()");
