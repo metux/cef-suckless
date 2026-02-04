@@ -195,13 +195,17 @@ CefWindowX11::CefWindowX11(CefRefPtr<CefBrowserHostBase> browser,
   }
 }
 
-CefWindowX11::~CefWindowX11() {
+CefWindowX11::Cleanup() {
   DCHECK_EQ(xwindow_, x11::Window::None);
   DCHECK(ui::X11EventSource::HasInstance());
   CEF_DEBUG("calling connection_->RemoveEventObserver()");
   connection_->RemoveEventObserver(this);
   CEF_DEBUG("calling ui::X11EventSource::GetInstance()->RemovePlatformEventDispatcher(this)");
   ui::X11EventSource::GetInstance()->RemovePlatformEventDispatcher(this);
+}
+
+CefWindowX11::~CefWindowX11() {
+  Cleanup();
   CEF_DEBUG("destructor done");
 }
 
@@ -420,62 +424,47 @@ bool CefWindowX11::TopLevelAlwaysOnTop() const {
   return false;
 }
 
-void CefWindowX11::DestroyA() {
-    CEF_DEBUG("can close the browser ... TryCloseBrowser() returned true");
-    // Allow the close.
-    connection_->DestroyWindow({xwindow_});
-    xwindow_ = x11::Window::None;
-    if (browser_) {
-        CEF_DEBUG("still have a browser: sending WindowDestroyed");
-        // Force the browser to be destroyed and release the reference
-        // added in PlatformCreateWindow().
-        AlloyBrowserHostImpl::FromBaseChecked(browser_)->WindowDestroyed();
-    }
-    DeleteMe();
-}
-
-void CefWindowX11::DestroyB() {
-    CEF_DEBUG("TryCloseBrowser() denied ... doing it anyways");
-
-    // Allow the close.
-    connection_->DestroyWindow({xwindow_});
-    xwindow_ = x11::Window::None;
-    if (browser_) {
-        CEF_DEBUG("still have a browser: sending WindowDestroyed");
-        // Force the browser to be destroyed and release the reference
-        // added in PlatformCreateWindow().
-        AlloyBrowserHostImpl::FromBaseChecked(browser_)->WindowDestroyed();
-    }
-    DeleteMe();
-}
-
 //
 // called when the browser window needs to be destroyed.
 //
 void CefWindowX11::DestroyMyself2() {
     CEF_DEBUG("going to destroy myself");
     if (!browser_ || browser_->TryCloseBrowser()) {
-        CEF_DEBUG("calling DestroyA()");
-        DestroyA();
+        CEF_DEBUG("can close the browser ... TryCloseBrowser() returned true");
+
+        // Allow the close.
+        connection_->DestroyWindow({xwindow_});
+        xwindow_ = x11::Window::None;
+        if (browser_) {
+            CEF_DEBUG("still have a browser: sending WindowDestroyed");
+            // Force the browser to be destroyed and release the reference
+            // added in PlatformCreateWindow().
+            AlloyBrowserHostImpl::FromBaseChecked(browser_)->WindowDestroyed();
+        }
+        DeleteMe();
     } else {
-        CEF_DEBUG("calling DestroyB()");
-        DestroyB();
+        CEF_DEBUG("TryCloseBrowser() denied ... doing it anyways");
+
+        // Allow the close.
+        connection_->DestroyWindow({xwindow_});
+        xwindow_ = x11::Window::None;
+        if (browser_) {
+            CEF_DEBUG("still have a browser: sending WindowDestroyed");
+            // Force the browser to be destroyed and release the reference
+            // added in PlatformCreateWindow().
+            AlloyBrowserHostImpl::FromBaseChecked(browser_)->WindowDestroyed();
+        }
+        DeleteMe();
     }
     CEF_DEBUG("returning");
 }
 
 void CefWindowX11::DeleteMe(void) {
-    CEF_DEBUG("not actually deleting myself");
+    CEF_DEBUG("clearing observer registrations");
 
-  DCHECK_EQ(xwindow_, x11::Window::None);
-  DCHECK(ui::X11EventSource::HasInstance());
-  CEF_DEBUG("calling connection_->RemoveEventObserver()");
-  connection_->RemoveEventObserver(this);
-  CEF_DEBUG("calling ui::X11EventSource::GetInstance()->RemovePlatformEventDispatcher(this)");
-  ui::X11EventSource::GetInstance()->RemovePlatformEventDispatcher(this);
-  CEF_DEBUG("destructor done");
-
-//    delete this;
+    Cleanup();
+    CEF_DEBUG("now delete'ing myself");
+    delete this;
 }
 
 void CefWindowX11::ProcessXEvent(const x11::Event& event) {
