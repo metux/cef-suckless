@@ -20,6 +20,8 @@
 #include "ui/gfx/font_render_params.h"
 #include "ui/views/widget/widget.h"
 
+#include "include/cef_debug.h"
+
 #if BUILDFLAG(IS_OZONE_X11)
 #include "cef/libcef/browser/native/window_x11.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
@@ -35,7 +37,7 @@ CefBrowserPlatformDelegateNativeLinux::CefBrowserPlatformDelegateNativeLinux(
 void CefBrowserPlatformDelegateNativeLinux::BrowserDestroyed(
     CefBrowserHostBase* browser) {
   CefBrowserPlatformDelegateNativeAura::BrowserDestroyed(browser);
-
+  CEF_DEBUG("");
   if (host_window_created_) {
     // Release the reference added in CreateHostWindow().
     browser->Release();
@@ -121,6 +123,7 @@ void CefBrowserPlatformDelegateNativeLinux::CloseHostWindow() {
   if (window_x11_) {
     CEF_DEBUG("window_x11_ NOT NULL ... calling window_x111_->Close()");
     window_x11_->Close();
+//    window_x11_ = NULL;
   } else {
     CEF_DEBUG("window_x11_ IS NULL");
   }
