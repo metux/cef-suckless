@@ -207,6 +207,7 @@ void CefWindowX11::Cleanup(void) {
 CefWindowX11::~CefWindowX11() {
   CEF_DEBUG("checking whether window already already None");
   DCHECK_EQ(xwindow_, x11::Window::None);
+  CEF_DEBUG("calling Cleanup()");
   Cleanup();
   CEF_DEBUG("destructor done");
 }
@@ -442,6 +443,7 @@ void CefWindowX11::DestroyMyself2() {
             // added in PlatformCreateWindow().
             AlloyBrowserHostImpl::FromBaseChecked(browser_)->WindowDestroyed();
         }
+        CEF_DEBUG("calling Cleanup() branch A");
         Cleanup();
     } else {
         CEF_DEBUG("TryCloseBrowser() denied ... doing it anyways");
@@ -455,6 +457,7 @@ void CefWindowX11::DestroyMyself2() {
             // added in PlatformCreateWindow().
             AlloyBrowserHostImpl::FromBaseChecked(browser_)->WindowDestroyed();
         }
+        CEF_DEBUG("calling Cleanup() branch B");
         Cleanup();
     }
     CEF_DEBUG("returning");
