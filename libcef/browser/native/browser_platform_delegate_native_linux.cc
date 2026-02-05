@@ -313,7 +313,7 @@ CefBrowserPlatformDelegateNativeLinux::~CefBrowserPlatformDelegateNativeLinux() 
     if (window_x11_ == nullptr) {
         CEF_DEBUG("need to delete window object");
         delete window_x11_;
-        window_x11 = nullptr;
+        window_x11_ = nullptr;
     } else {
         CEF_DEBUG("window object already gone");
     }
