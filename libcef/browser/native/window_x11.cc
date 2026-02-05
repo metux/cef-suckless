@@ -390,7 +390,6 @@ uint32_t CefWindowX11::DispatchEvent(const ui::PlatformEvent& event) {
 }
 
 void CefWindowX11::OnEvent(const x11::Event& event) {
-  CEF_DEBUG("");
   if (!IsTargetedBy(event)) {
     return;
   }
@@ -608,7 +607,6 @@ bool CefWindowX11::IsTargetedBy(const x11::Event& xev) const {
     return visibility->window == xwindow_;
   }
   if (auto* destroy = xev.As<x11::DestroyNotifyEvent>()) {
-    CEF_DEBUG("DestroyNotifyEvent: ev=%X | win=%X | our=%X", destroy->window, destroy->event, xwindow_);
     return ((destroy->window == xwindow_) || (destroy->event == xwindow_));
   }
   return false;
