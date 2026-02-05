@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "include/cef_debug.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -509,10 +510,13 @@ void AlloyBrowserHostImpl::WindowDestroyed() {
   DCHECK(!window_destroyed_);
   window_destroyed_ = true;
 
+  CEF_DEBUG("calling menu_manager._reset()");
   // Destroy objects that may reference the window.
   menu_manager_.reset(nullptr);
 
+  CEF_DEBUG("calling CloseBrowser()");
   CloseBrowser(true);
+  CEF_DEBUG("returned from CloseBrowser()");
 }
 
 bool AlloyBrowserHostImpl::WillBeDestroyed() const {
