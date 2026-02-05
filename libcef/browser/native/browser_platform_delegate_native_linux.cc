@@ -39,8 +39,11 @@ void CefBrowserPlatformDelegateNativeLinux::BrowserDestroyed(
   CefBrowserPlatformDelegateNativeAura::BrowserDestroyed(browser);
   CEF_DEBUG("");
   if (host_window_created_) {
+    CEF_DEBUG("host_window_created_");
     // Release the reference added in CreateHostWindow().
     browser->Release();
+  } else {
+    CEF_DEBUG("not host_window_created_");
   }
 }
 
