@@ -444,7 +444,8 @@ void CefWindowX11::DestroyMyself2() {
             AlloyBrowserHostImpl::FromBaseChecked(browser_)->WindowDestroyed();
         }
         CEF_DEBUG("calling Cleanup() branch A");
-        Cleanup();
+// here the object is already destroyed
+//        Cleanup();
     } else {
         CEF_DEBUG("TryCloseBrowser() denied ... doing it anyways");
 
@@ -458,7 +459,8 @@ void CefWindowX11::DestroyMyself2() {
             AlloyBrowserHostImpl::FromBaseChecked(browser_)->WindowDestroyed();
         }
         CEF_DEBUG("calling Cleanup() branch B");
-        Cleanup();
+// here the object is already destroyed
+//        Cleanup();
     }
     CEF_DEBUG("returning");
 }
