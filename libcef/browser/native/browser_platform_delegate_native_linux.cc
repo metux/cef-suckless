@@ -308,7 +308,7 @@ CefBrowserPlatformDelegateNativeLinux::TranslateWebKeyEvent(
   return input::NativeWebKeyboardEvent(ui_event);
 }
 
-~CefBrowserPlatformDelegateNativeLinux::CefBrowserPlatformDelegateNativeLinux() {
+CefBrowserPlatformDelegateNativeLinux::~CefBrowserPlatformDelegateNativeLinux() {
     CEF_DEBUG("destructor ...");
     if (window_x11_ == nullptr) {
         CEF_DEBUG("need to delete window object");
