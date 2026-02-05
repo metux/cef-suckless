@@ -72,8 +72,6 @@ class CefWindowX11 : public ui::PlatformEventDispatcher,
 
   void DestroyMyself2();
 
-  __attribute__((noinline)) void DeleteMe(void);
-
   CefRefPtr<CefBrowserHostBase> browser_;
 
   // The display and the native X window hosting the root window.

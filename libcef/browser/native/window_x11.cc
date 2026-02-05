@@ -196,7 +196,7 @@ CefWindowX11::CefWindowX11(CefRefPtr<CefBrowserHostBase> browser,
 }
 
 void CefWindowX11::Cleanup(void) {
-  DCHECK_EQ(xwindow_, x11::Window::None);
+  // DCHECK_EQ(xwindow_, x11::Window::None);
   DCHECK(ui::X11EventSource::HasInstance());
   CEF_DEBUG("calling connection_->RemoveEventObserver()");
   connection_->RemoveEventObserver(this);
@@ -205,6 +205,8 @@ void CefWindowX11::Cleanup(void) {
 }
 
 CefWindowX11::~CefWindowX11() {
+  CEF_DEBUG("checking whether window already already None");
+  DCHECK_EQ(xwindow_, x11::Window::None);
   Cleanup();
   CEF_DEBUG("destructor done");
 }
@@ -440,7 +442,7 @@ void CefWindowX11::DestroyMyself2() {
             // added in PlatformCreateWindow().
             AlloyBrowserHostImpl::FromBaseChecked(browser_)->WindowDestroyed();
         }
-        DeleteMe();
+        Cleanup();
     } else {
         CEF_DEBUG("TryCloseBrowser() denied ... doing it anyways");
 
@@ -453,18 +455,9 @@ void CefWindowX11::DestroyMyself2() {
             // added in PlatformCreateWindow().
             AlloyBrowserHostImpl::FromBaseChecked(browser_)->WindowDestroyed();
         }
-        DeleteMe();
+        Cleanup();
     }
     CEF_DEBUG("returning");
-}
-
-void CefWindowX11::DeleteMe(void) {
-    CEF_DEBUG("clearing observer registrations");
-
-    Cleanup();
-    CEF_DEBUG("not deleting myself now");
-//    CEF_DEBUG("now delete'ing myself");
-//    delete this;
 }
 
 void CefWindowX11::ProcessXEvent(const x11::Event& event) {
