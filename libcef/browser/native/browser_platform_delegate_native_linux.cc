@@ -126,6 +126,7 @@ void CefBrowserPlatformDelegateNativeLinux::CloseHostWindow() {
   if (window_x11_) {
     CEF_DEBUG("window_x11_ NOT NULL ... calling window_x111_->Close()");
     window_x11_->Close();
+    CEF_DEBUG("window_x11_->Close has finished\n");
 //    window_x11_ = NULL;
   } else {
     CEF_DEBUG("window_x11_ IS NULL");
@@ -305,4 +306,15 @@ CefBrowserPlatformDelegateNativeLinux::TranslateWebKeyEvent(
     return input::NativeWebKeyboardEvent(ui_event, key_event.character);
   }
   return input::NativeWebKeyboardEvent(ui_event);
+}
+
+~CefBrowserPlatformDelegateNativeLinux::CefBrowserPlatformDelegateNativeLinux() {
+    CEF_DEBUG("destructor ...");
+    if (window_x11_ == nullptr) {
+        CEF_DEBUG("need to delete window object");
+        delete window_x11_;
+        delete_window_x11 = nullptr;
+    } else {
+        CEF_DEBUG("window object already gone");
+    }
 }

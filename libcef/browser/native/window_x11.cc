@@ -463,8 +463,9 @@ void CefWindowX11::DeleteMe(void) {
     CEF_DEBUG("clearing observer registrations");
 
     Cleanup();
-    CEF_DEBUG("now delete'ing myself");
-    delete this;
+    CEF_DEBUG("not deleting myself now");
+//    CEF_DEBUG("now delete'ing myself");
+//    delete this;
 }
 
 void CefWindowX11::ProcessXEvent(const x11::Event& event) {
